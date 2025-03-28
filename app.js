@@ -24,49 +24,41 @@ app.post('/fetch', async (req, res) => {
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
     }
+    
+    // ----- Intentionally introduced failure -----
+    // This error will always be thrown to simulate a failed test/deployment.
+    throw new Error('Intentional failure for testing purposes');
 
-    // Fetch the content from the provided URL
+    // The following code will never run.
     const response = await axios.get(url);
     const html = response.data;
-
-    // Use cheerio to parse HTML and selectively replace text content, not URLs
     const $ = cheerio.load(html);
     
-    // Function to replace text but skip URLs and attributes
-    function replaceYaleWithFale(i, el) {
-      if ($(el).children().length === 0 || $(el).text().trim() !== '') {
-        // Get the HTML content of the element
-        let content = $(el).html();
-        
-        // Only process if it's a text node
-        if (content && $(el).children().length === 0) {
-          // Replace Yale with Fale in text content only
-          content = content.replace(/Yale/g, 'Fale').replace(/yale/g, 'fale');
-          $(el).html(content);
-        }
-      }
+    function replaceYaleText(content) {
+      return content.replace(/Yale|yale|YALE/g, (match) => {
+        if (match === 'YALE') return 'FALE';
+        if (match === 'Yale') return 'Fale';
+        return 'fale';
+      });
     }
     
-    // Process text nodes in the body
     $('body *').contents().filter(function() {
-      return this.nodeType === 3; // Text nodes only
+      return this.nodeType === 3;
     }).each(function() {
-      // Replace text content but not in URLs or attributes
-      const text = $(this).text();
-      const newText = text.replace(/Yale/g, 'Fale').replace(/yale/g, 'fale');
-      if (text !== newText) {
+      const originalText = $(this).text();
+      const newText = replaceYaleText(originalText);
+      if (originalText !== newText) {
         $(this).replaceWith(newText);
       }
     });
     
-    // Process title separately
-    const title = $('title').text().replace(/Yale/g, 'Fale').replace(/yale/g, 'fale');
-    $('title').text(title);
+    let newTitle = replaceYaleText($('title').text());
+    $('title').text(newTitle);
     
     return res.json({ 
       success: true, 
       content: $.html(),
-      title: title,
+      title: newTitle,
       originalUrl: url
     });
   } catch (error) {
@@ -79,5 +71,5 @@ app.post('/fetch', async (req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Faleproxy server running at http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
