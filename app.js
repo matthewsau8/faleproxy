@@ -32,7 +32,7 @@ app.post('/fetch', async (req, res) => {
     const $ = cheerio.load(html);
     
     function replaceYaleText(content) {
-      return content.replace(/Yale|yale|YALE/g, (match) => {
+      return content.replace(/Yale|yale|YALE/gi, (match) => {
         if (match === 'YALE') return 'FALE';
         if (match === 'Yale') return 'Fale';
         return 'fale';
