@@ -37,6 +37,7 @@ jobs:
         
   deploy:
     needs: test
+    # Only deploy to production when on main/master branch AND all tests pass
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && success()
     runs-on: ubuntu-latest
     
