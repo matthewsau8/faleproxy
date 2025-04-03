@@ -25,11 +25,8 @@ app.post('/fetch', async (req, res) => {
       return res.status(400).json({ error: 'URL is required' });
     }
     
-    // ----- Intentionally introduced failure -----
-    // This error will always be thrown to simulate a failed test/deployment.
-    throw new Error('Intentional failure for testing purposes');
+    // Removed intentional failure
 
-    // The following code will never run.
     const response = await axios.get(url);
     const html = response.data;
     const $ = cheerio.load(html);
